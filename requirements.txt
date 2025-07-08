@@ -1,0 +1,6 @@
+django==4.2.7 
+psycopg2-binary==2.9.7 
+#SQLAlchemy==2.0.21 
+django-cors-headers==4.3.1 
+dj-database-url==2.2.0
+djangorestframework==3.14.0  # Pour API REST
