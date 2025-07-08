@@ -30,11 +30,19 @@ jobs:
       run: |
         echo "DEBUG=True" > .env
         echo "SECRET_KEY=test-secret-key-for-github-actions" >> .env
+        echo "DATABASE_URL=postgresql://test:test123@localhost:5432/test" >> .env
         echo "DB_NAME=test" >> .env
         echo "DB_USER=test" >> .env
         echo "DB_PASSWORD=test123" >> .env
         echo "DB_HOST=localhost" >> .env
         echo "DB_PORT=5432" >> .env
+    
+    - name: Wait for PostgreSQL
+      run: |
+        until pg_isready -h localhost -p 5432 -U test; do
+          echo "Waiting for PostgreSQL..."
+          sleep 2
+        done
     
     - run: python manage.py migrate
     - run: python manage.py test installations.tests -v 2 || echo "Tests completed"
