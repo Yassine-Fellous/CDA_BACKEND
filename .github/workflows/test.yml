@@ -13,6 +13,8 @@ jobs:
           POSTGRES_PASSWORD: test123
           POSTGRES_USER: test
           POSTGRES_DB: test
+        ports:
+          - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
@@ -23,10 +25,16 @@ jobs:
         cache: 'pip'
     
     - run: pip install -r requirements.txt
-    - run: |
-        echo "DATABASE_URL=postgresql://test:test123@localhost/test" > .env
-        echo "SECRET_KEY=test-key-123" >> .env
-        echo "DEBUG=True" >> .env
+    
+    - name: Setup environment
+      run: |
+        echo "DEBUG=True" > .env
+        echo "SECRET_KEY=test-secret-key-for-github-actions" >> .env
+        echo "DB_NAME=test" >> .env
+        echo "DB_USER=test" >> .env
+        echo "DB_PASSWORD=test123" >> .env
+        echo "DB_HOST=localhost" >> .env
+        echo "DB_PORT=5432" >> .env
     
     - run: python manage.py migrate
     - run: python manage.py test installations.tests -v 2 || echo "Tests completed"
