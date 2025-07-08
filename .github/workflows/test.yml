@@ -37,12 +37,43 @@ jobs:
         echo "DB_HOST=localhost" >> .env
         echo "DB_PORT=5432" >> .env
     
+    - name: Debug environment
+      run: |
+        echo "=== Environment file content ==="
+        cat .env
+        echo "=== Environment variables ==="
+        echo "DATABASE_URL: $DATABASE_URL"
+        python -c "import os; print('DATABASE_URL from os:', repr(os.getenv('DATABASE_URL')))"
+        python -c "from dotenv import load_dotenv; load_dotenv(); import os; print('DATABASE_URL from dotenv:', repr(os.getenv('DATABASE_URL')))"
+    
+    - name: Install PostgreSQL client
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y postgresql-client
+    
     - name: Wait for PostgreSQL
       run: |
         until pg_isready -h localhost -p 5432 -U test; do
           echo "Waiting for PostgreSQL..."
           sleep 2
         done
+        echo "PostgreSQL is ready!"
+    
+    - name: Test settings import
+      run: |
+        python -c "
+        import os
+        from dotenv import load_dotenv
+        load_dotenv()
+        print('DATABASE_URL:', repr(os.getenv('DATABASE_URL')))
+        
+        # Test dj_database_url directly
+        import dj_database_url
+        url = os.getenv('DATABASE_URL')
+        print('Parsing URL:', url)
+        config = dj_database_url.parse(url)
+        print('Config:', config)
+        "
     
     - run: python manage.py migrate
     - run: python manage.py test installations.tests -v 2 || echo "Tests completed"
