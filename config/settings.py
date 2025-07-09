@@ -116,3 +116,8 @@ if 'RAILWAY_ENVIRONMENT' in os.environ:
     
     # Static files pour Railway
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+if 'DATABASE_URL' in os.environ:
+    DATABASES = {
+        'default': dj_database_url.config(conn_max_age=600)
+    }

@@ -1,5 +1,6 @@
 django==4.2.7 
-psycopg2-binary==2.9.7 
+psycopg2-binary==2.9.7 # Pour PostgreSQL
+# psycopg2-binary est utilisé pour se connecter à la base de données PostgreSQL
 #SQLAlchemy==2.0.21 
 django-cors-headers==4.3.1 
 dj-database-url==2.2.0
