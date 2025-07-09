@@ -98,26 +98,3 @@ REST_FRAMEWORK = {
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# À la fin de config/settings.py, ajouter:
-
-# Railway
-if 'RAILWAY_ENVIRONMENT' in os.environ:
-    import dj_database_url
-    
-    ALLOWED_HOSTS = ['*']
-    DEBUG = False
-    
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=os.environ.get('DATABASE_URL')
-        )
-    }
-    
-    # Static files pour Railway
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-if 'DATABASE_URL' in os.environ:
-    DATABASES = {
-        'default': dj_database_url.config(conn_max_age=600)
-    }
