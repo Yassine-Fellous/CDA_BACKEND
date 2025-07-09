@@ -1,30 +1,14 @@
+# Copyright (c) 2025
+# Yassine Fellous, Abdelkader Sofiane Ziri, Mathieu Duverne, Mohamed Marwane Bellagha
+# Tous droits réservés. Utilisation interdite sans autorisation écrite des auteurs.
+
 # Railway deployment configuration
 name: cda-backend-sport-api
 
 build:
   builder: dockerfile
 
-variables:
-  DJANGO_SETTINGS_MODULE: config.settings
-  PYTHONPATH: /app
-  PYTHONUNBUFFERED: 1
-  PORT: ${{ RAILWAY_PORT }}
-
 deploy:
   healthcheckPath: /api/v1/installations/sports/
-  healthcheckTimeout: 60
+  healthcheckTimeout: 30
   restartPolicyType: always
-
-# Services de base de données
-services:
-  web:
-    source: .
-    build:
-      dockerfile: Dockerfile
-    variables:
-      DATABASE_URL: ${{ Postgres.DATABASE_URL }}
-      SECRET_KEY: ${{ SECRET_KEY }}
-      DEBUG: false
-      ALLOWED_HOSTS: ${{ RAILWAY_PUBLIC_DOMAIN }},${{ RAILWAY_PRIVATE_DOMAIN }}
-    domains:
-      - cda-sport-api.railway.app
