@@ -1,21 +1,21 @@
-# Copyright (c) 2025
-# Yassine Fellous, Abdelkader Sofiane Ziri, Mathieu Duverne, Mohamed Marwane Bellagha
-# Tous droits réservés. Utilisation interdite sans autorisation écrite des auteurs.
+services:
+  - name: api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    env:
+      DATABASE_URL: ${DATABASE_URL}
 
-# Railway deployment configuration
-name: cda-backend-sport-api
+  - name: db
+    image: postgres:15-alpine
+    env:
+      POSTGRES_USER: sportadmin
+      POSTGRES_DB: sport
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
-build:
-  builder: dockerfile
-
-deploy:
-  startCommand: >
-    sh -c "
-      python manage.py makemigrations installations || true &&
-      python manage.py migrate || true &&
-      python manage.py load_csv data/filtered-data-es.csv || true &&
-      gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
-    "
-  healthcheckPath: /api/v1/installations/sports/
-  healthcheckTimeout: 30
-  restartPolicyType: always
+volumes:
+  postgres_data:
