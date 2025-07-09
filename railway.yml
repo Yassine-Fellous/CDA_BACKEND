@@ -5,8 +5,8 @@ build:
 deploy:
   startCommand: >
     sh -c "
-      python manage.py makemigrations installations || true &&
-      python manage.py migrate || true &&
+      python manage.py makemigrations installations &&
+      python manage.py migrate &&
       python manage.py load_csv data/filtered-data-es.csv || true &&
       gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
     "
