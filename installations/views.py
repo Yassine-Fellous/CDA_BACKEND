@@ -1,3 +1,8 @@
+# Copyright (c) 2025
+# Yassine Fellous, Abdelkader Sofiane Ziri, Mathieu Duverne, Mohamed Marwane Bellagha
+# Tous droits réservés. Utilisation interdite sans autorisation écrite des auteurs.
+
+from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.http import JsonResponse

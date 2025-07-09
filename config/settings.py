@@ -1,3 +1,7 @@
+# Copyright (c) 2025
+# Yassine Fellous, Abdelkader Sofiane Ziri, Mathieu Duverne, Mohamed Marwane Bellagha
+# Tous droits réservés. Utilisation interdite sans autorisation écrite des auteurs.
+
 import os
 from pathlib import Path
 import dj_database_url  # Added for DATABASE_URL parsing
@@ -71,3 +75,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# À la fin de config/settings.py, ajouter:
+
+# Railway
+ALLOWED_HOSTS = ['*']  # Simple pour Railway
+DATABASES['default'] = dj_database_url.config(default=os.environ.get('DATABASE_URL'))

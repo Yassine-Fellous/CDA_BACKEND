@@ -1,56 +1,6 @@
-#import csv
-#import json
-#from django.core.management.base import BaseCommand
-#from installations.models import Installation
-#
-#class Command(BaseCommand):
-#    help = 'Load installations from CSV file'
-#
-#    def add_arguments(self, parser):
-#        parser.add_argument('csv_file', type=str, help='Path to CSV file')
-#        parser.add_argument('--clear', action='store_true', help='Clear existing data first')
-#
-#    def handle(self, *args, **options):
-#        csv_file = options['csv_file']
-#        
-#        # ✅ SOLUTION 1: Vider la table avant d'importer
-#        if options['clear'] or Installation.objects.exists():
-#            self.stdout.write("🗑️  Clearing existing installations...")
-#            Installation.objects.all().delete()
-#            self.stdout.write("✅ Database cleared")
-#        
-#        imported_count = 0
-#        
-#        with open(csv_file, 'r', encoding='utf-8') as file:
-#            reader = csv.DictReader(file)
-#            
-#            for row in reader:
-#                try:
-#                    # Convertir coordonnees string en dict
-#                    coordonnees_str = row.get('coordonnees', '{}')
-#                    coordonnees = json.loads(coordonnees_str.replace("'", '"'))
-#                    
-#                    Installation.objects.create(
-#                        inst_numero=row['inst_numero'],
-#                        coordonnees=coordonnees,
-#                        inst_nom=row['inst_nom'],
-#                        equip_type_name=row['equip_type_name'],
-#                        equip_type_famille=row.get('equip_type_famille', ''),
-#                        equip_aps_nom=row.get('aps_name', ''),
-#                        equip_acc_libre=row.get('equip_acc_libre', '').lower() == 'true',
-#                        equip_url=row.get('equip_url', ''),
-#                        inst_adresse=row.get('inst_adresse', ''),
-#                        inst_cp=row.get('new_code', ''),
-#                        equip_prop_nom=row.get('equip_prop_nom', ''),
-#                        equip_gest_type=row.get('equip_gest_type', ''),
-#                        inst_acc_handi_bool=row.get('inst_acc_handi_bool', '').lower() == 'true'
-#                    )
-#                    imported_count += 1
-#                    
-#                except Exception as e:
-#                    self.stdout.write(f"❌ Error importing row: {e}")
-#        
-#        self.stdout.write(f"✅ Imported {imported_count} installations")
+# Copyright (c) 2025
+# Yassine Fellous, Abdelkader Sofiane Ziri, Mathieu Duverne, Mohamed Marwane Bellagha
+# Tous droits réservés. Utilisation interdite sans autorisation écrite des auteurs.
 
 import csv
 import json

@@ -1,3 +1,7 @@
+# Copyright (c) 2025
+# Yassine Fellous, Abdelkader Sofiane Ziri, Mathieu Duverne, Mohamed Marwane Bellagha
+# Tous droits réservés. Utilisation interdite sans autorisation écrite des auteurs.
+
 # AVANT (SQLAlchemy)
 # from sqlalchemy import Column, String, Integer, Boolean, JSON
 # from sqlalchemy.ext.declarative import declarative_base

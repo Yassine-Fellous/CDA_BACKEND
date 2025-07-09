@@ -1,3 +1,7 @@
+# Copyright (c) 2025
+# Yassine Fellous, Abdelkader Sofiane Ziri, Mathieu Duverne, Mohamed Marwane Bellagha
+# Tous droits réservés. Utilisation interdite sans autorisation écrite des auteurs.
+
 #!/usr/bin/env python
 import os
 import sys

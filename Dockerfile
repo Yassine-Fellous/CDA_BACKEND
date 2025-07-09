@@ -16,5 +16,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application
 COPY . .
 
+EXPOSE $PORT
 # Run migration and start the Django server
 #CMD ["sh", "-c", "python /app/manage.py migrate && python /app/manage.py load_csv data/filtered-data-es.csv && python /app/manage.py runserver 0.0.0.0:80"]
