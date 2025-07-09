@@ -6,7 +6,7 @@ services:
     ports:
       - "80:80"
     env:
-      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL: ${{ Postgres.DATABASE_URL }}
 
   - name: db
     image: postgres:15-alpine
