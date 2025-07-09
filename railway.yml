@@ -1,21 +1,15 @@
-services:
-  - name: api
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "80:80"
-    env:
-      DATABASE_URL: ${{ Postgres.DATABASE_URL }}
+build:
+  context: .
+  dockerfile: Dockerfile
 
-  - name: db
-    image: postgres:15-alpine
-    env:
-      POSTGRES_USER: sportadmin
-      POSTGRES_DB: sport
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-volumes:
-  postgres_data:
+deploy:
+  startCommand: >
+    sh -c "
+      python manage.py makemigrations installations || true &&
+      python manage.py migrate || true &&
+      python manage.py load_csv data/filtered-data-es.csv || true &&
+      gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
+    "
+  healthcheckPath: /api/v1/installations/sports/
+  healthcheckTimeout: 30
+  restartPolicyType: always
