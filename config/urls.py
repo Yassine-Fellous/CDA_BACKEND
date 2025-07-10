@@ -11,8 +11,8 @@ def home(request):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    #path('api/v1/', include('installations.urls')),
-    path('', include('installations.urls')), # Test URL for installations
+    path('api/v1/', include('installations.urls')),
+    #path('', include('installations.urls')), # Test URL for installations
     path('', home),  # Test URL for home
 ]
 #path('', include('api.urls', namespace='api'))
