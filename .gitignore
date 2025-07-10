@@ -38,7 +38,7 @@ Thumbs.db
 .dockerignore
 
 # Data files (keep structure, ignore content)
-data/*.csv
+#data/*.csv
 data/*.json
 !data/.gitkeep
 
