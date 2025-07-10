@@ -6,6 +6,10 @@ from django.contrib import admin
 from django.urls import path, include
 from django.http import HttpResponse
 
+#lien vers les vues de l'application installations
+#qui affichent les données des installations sportives
+#pour les tests de l'API
+from installations import views
 def home(request):
     html = """
     <h1>Bienvenue sur l'API CDA Backend !</h1>
