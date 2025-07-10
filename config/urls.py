@@ -7,7 +7,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/', include('installations.urls')),
+    #path('api/v1/', include('installations.urls')),
     path('', include('installations.urls')) # Test URL for installations
 ]
 #path('', include('api.urls', namespace='api'))
