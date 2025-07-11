@@ -14,10 +14,10 @@ def home(request):
     html = """
     <h1>Bienvenue sur l'API CDA Backend !</h1>
     <ul>
-        <li><a href="/api/v1/sports/">/api/v1/sports/</a></li>
-        <li><a href="/api/v1/equipments/">/api/v1/equipments/</a></li>
-        <li><a href="/api/v1/geojson/">/api/v1/geojson/</a></li>
-        <li><a href="/api/v1/installations/">/api/v1/installations/</a></li>
+        <li><a href="sports/">sports/</a></li>
+        <li><a href="equipments/">equipments/</a></li>
+        <li><a href="geojson/">geojson/</a></li>
+        <li><a href="installations/">installations/</a></li>
     </ul>
     <p>URL de base : <b>https://cdabackend-production.up.railway.app</b></p>
     """
