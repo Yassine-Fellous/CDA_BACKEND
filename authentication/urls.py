@@ -1,4 +1,5 @@
 from .views import register_view
+from .views import login_view
 from django.urls import path
 
 

@@ -26,6 +26,7 @@ def home(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('installations.urls')),
+    path('auth/', include('authentication.urls')),
     #path('', include('installations.urls')), # Test URL for installations
     path('', home),  # Test URL for home
 ]
