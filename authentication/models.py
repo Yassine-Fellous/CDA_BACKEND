@@ -4,18 +4,17 @@
 
 from django.db import models
 
-# Create your models here.
-from django.db import models
-from django.utils import timezone
-
 class UserAuth(models.Model):
     email = models.EmailField(unique=True)
-    password = models.CharField(max_length=128)  # Stocke le hash, pas le mot de passe en clair
-    token = models.CharField(max_length=64, blank=True, null=True)
-    token_expire = models.DateTimeField(blank=True, null=True)
+    password = models.CharField(max_length=128)
+    is_verified = models.BooleanField(default=False)
+    verification_code = models.CharField(max_length=6, blank=True, null=True)  # Stocke le hash, pas le mot de passe en clair
 
-    def is_token_valid(self):
-        return self.token and self.token_expire and self.token_expire > timezone.now()
 
+    class Meta:
+        db_table = 'authentication_userauth'
+        verbose_name = 'Utilisateur'
+        verbose_name_plural = 'Utilisateurs'
+    
     def __str__(self):
         return self.email

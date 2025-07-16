@@ -14,4 +14,5 @@ whitenoise==6.6.0 # Pour servir les fichiers statiques en production
 # Il est recommandé de l'utiliser avec Django pour simplifier la gestion des fichiers statiques.
 # Il permet de servir les fichiers statiques directement depuis l'application Django sans avoir besoin d'un serveur web séparé comme Nginx ou Apache.
 # Cela simplifie le déploiement et la configuration de l'application.
-# whitenoise est particulièrement utile pour les applications déployées sur des
+# whitenoise est particulièrement utile pour les applications déployées sur des plateformes comme Railway, où la configuration d'un serveur web séparé peut être complexe.
+PyJWT>=2.8.0 # Pour la gestion des tokens JWT
