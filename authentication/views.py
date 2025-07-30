@@ -14,6 +14,7 @@ import jwt
 import json
 import random
 from django.core.mail import send_mail, EmailMultiAlternatives
+from .models import UserAuth
 
 @csrf_exempt
 def login_view(request):
@@ -112,3 +113,46 @@ def verify_code_view(request):
         except UserAuth.DoesNotExist:
             return JsonResponse({'error': 'Utilisateur non trouvé'}, status=404)
     return JsonResponse({"error": "Méthode non autorisée"}, status=405)
+
+@csrf_exempt
+def request_password_reset(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        email = data.get("email")
+        if not UserAuth.objects.filter(email=email).exists():
+            return JsonResponse({"error": "Email inconnu"}, status=404)
+        token = secrets.token_urlsafe(32)
+        user = UserAuth.objects.get(email=email)
+        user.reset_token = token
+        user.reset_token_created = timezone.now()
+        user.save()
+        reset_link = f"http://localhost:1335/auth/reset-password/?token={token}&email={email}"
+        send_mail(
+            "Réinitialisation de votre mot de passe",
+            f"Pour réinitialiser votre mot de passe, cliquez sur ce lien : {reset_link}",
+            "noreply@sportmap.me",
+            [email],
+        )
+        return JsonResponse({"message": "Lien de réinitialisation envoyé par email"})
+    return JsonResponse({"error": "Méthode non autorisée"}, status=405)
+
+@csrf_exempt
+def reset_password(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        email = data.get("email")
+        token = data.get("token")
+        new_password = data.get("new_password")
+        try:
+            reset_token = UserAuth.objects.filter(email=email, token=reset_token, is_used=False).latest('created_at')
+            if reset_token.is_expired():
+                return JsonResponse({"error": "Token expiré"}, status=400)
+            user = UserAuth.objects.get(email=email)
+            user.password = make_password(new_password)
+            user.save()
+            reset_token.is_used = True
+            reset_token.save()
+            return JsonResponse({"message": "Mot de passe réinitialisé"})
+        except UserAuth.DoesNotExist:
+            return JsonResponse({"error": "Lien invalide"}, status=400)
+    return JsonResponse({"error": "Méthode non autorisée"}, status= 405)

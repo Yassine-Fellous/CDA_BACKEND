@@ -3,12 +3,16 @@
 # Tous droits réservés. Utilisation interdite sans autorisation écrite des auteurs.
 
 from django.db import models
+from django.utils import timezone
 
+# Modèle pour l'authentification des utilisateurs
 class UserAuth(models.Model):
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=128)
     is_verified = models.BooleanField(default=False)
     verification_code = models.CharField(max_length=6, blank=True, null=True)  # Stocke le hash, pas le mot de passe en clair
+    reset_token = models.CharField(max_length=64, blank=True, null=True)
+    reset_token_created = models.DateTimeField(blank=True, null=True)
 
 
     class Meta:
