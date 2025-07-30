@@ -144,15 +144,15 @@ def reset_password(request):
         token = data.get("token")
         new_password = data.get("new_password")
         try:
-            reset_token = UserAuth.objects.filter(email=email, token=reset_token, is_used=False).latest('created_at')
-            if reset_token.is_expired():
+            user = UserAuth.objects.get(email=email, reset_token=token)
+            # Vérifie l'expiration du token (1h ici)
+            if not user.reset_token_created or (timezone.now() - user.reset_token_created).total_seconds() > 3600:
                 return JsonResponse({"error": "Token expiré"}, status=400)
-            user = UserAuth.objects.get(email=email)
             user.password = make_password(new_password)
+            user.reset_token = None
+            user.reset_token_created = None
             user.save()
-            reset_token.is_used = True
-            reset_token.save()
             return JsonResponse({"message": "Mot de passe réinitialisé"})
         except UserAuth.DoesNotExist:
             return JsonResponse({"error": "Lien invalide"}, status=400)
-    return JsonResponse({"error": "Méthode non autorisée"}, status= 405)
+    return JsonResponse({"error": "Méthode non autorisée"}, status=405)
