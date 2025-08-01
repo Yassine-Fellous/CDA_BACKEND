@@ -25,6 +25,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'installations',
+    'authentication',
+    'signalements'
 ]
 
 MIDDLEWARE = [
@@ -39,7 +41,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = DEBUG
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
 
 ROOT_URLCONF = 'config.urls'
 
@@ -98,3 +102,15 @@ REST_FRAMEWORK = {
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = 'smtp-relay.brevo.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = '9228db001@smtp-brevo.com'       # ex : abcdef1234567890
+EMAIL_HOST_PASSWORD = 'D3nwgGbPhrs0aZ5k'  # ex : 123456abcdefg
+
+DEFAULT_FROM_EMAIL = 'noreply@sportmap.me'  # Celui que tu veux comme expéditeur
