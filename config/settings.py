@@ -46,6 +46,18 @@ CORS_ALLOWED_ORIGINS = [
     "https://cdafrontend-production.up.railway.app",
 ]
 
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
