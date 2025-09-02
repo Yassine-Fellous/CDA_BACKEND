@@ -47,6 +47,8 @@ jobs:
             'django.contrib.staticfiles',
             'rest_framework',
             'installations',
+            'authentication',
+            'signalements'
         ]
         
         MIDDLEWARE = [
