@@ -13,13 +13,8 @@ from django.conf import settings
 import jwt
 import json
 import random
-from django.core.mail import send_mail, EmailMultiAlternatives
-from .models import UserAuth
+from .email_utils import send_email_via_brevo_api
 
-# views.py
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import json
 
 @csrf_exempt
 def health_check(request):
@@ -67,81 +62,69 @@ def login_view(request):
             return JsonResponse({"error": "Utilisateur non trouvé"}, status=404)
     return JsonResponse({"error": "Méthode non autorisée"}, status=405)
 
-#@csrf_exempt
-#def register_view(request):
-#    if request.method == "POST":
-#        data = json.loads(request.body)
-#        email = data.get("email")
-#        password = data.get("password")
-#        if not email or not password:
-#            return JsonResponse({"error": "Email et mot de passe requis"}, status=400)
-#        if UserAuth.objects.filter(email=email).exists():
-#            return JsonResponse({"error": "Email déjà utilisé"}, status=409)
-#        code = str(random.randint(100000, 999999))
-#        user = UserAuth.objects.create(
-#            email=email,
-#            password=make_password(password),
-#            is_verified=False,
-#            verification_code=code
-#        )
-#        html_content = f"""
-#        <html>
-#          <body style="background:#f7f9fc;padding:40px;">
-#            <div style="max-width:400px;margin:auto;background:white;border-radius:12px;box-shadow:0 2px 8px #e3e8ee;padding:32px;">
-#              <h2 style="color:#2563eb;font-family:sans-serif;">Bienvenue sur <span style="color:#0ea5e9;">SportMap</span> !</h2>
-#              <p style="font-size:16px;color:#334155;font-family:sans-serif;">
-#                Voici votre code de validation :
-#              </p>
-#              <div style="font-size:32px;font-weight:bold;color:#2563eb;background:#e0f2fe;padding:16px;border-radius:8px;text-align:center;letter-spacing:4px;">
-#                {code}
-#              </div>
-#              <p style="margin-top:24px;font-size:14px;color:#64748b;font-family:sans-serif;">
-#                <br>
-#                Merci de votre inscription !
-#              </p>
-#            </div>
-#          </body>
-#        </html>
-#        """
-#        msg = EmailMultiAlternatives(
-#            'Votre code de validation SportMap',
-#            f'Votre code est : {code}',
-#            'noreply@sportmap.me',
-#            [email]
-#        )
-#        msg.attach_alternative(html_content, "text/html")
-#        msg.send()
-#        return JsonResponse({"message": "Code envoyé par email"})
-#    return JsonResponse({"error": "Méthode non autorisée"}, status=405)
-#
-
 @csrf_exempt
 def register_view(request):
     if request.method == "POST":
-        data = json.loads(request.body)
-        email = data.get("email")
-        password = data.get("password")
-        
-        if not email or not password:
-            return JsonResponse({"error": "Email et mot de passe requis"}, status=400)
-        
-        if UserAuth.objects.filter(email=email).exists():
-            return JsonResponse({"error": "Email déjà utilisé"}, status=409)
-        
-        code = str(random.randint(100000, 999999))
-        user = UserAuth.objects.create(
-            email=email,
-            password=make_password(password),
-            is_verified=False,
-            verification_code=code
-        )
-        
-        # VERSION TEST - SANS EMAIL
-        return JsonResponse({
-            "message": "Compte créé - email désactivé pour tests",
-            "code": code  # Retourne le code directement
-        })
-    
+        try:
+            data = json.loads(request.body)
+            email = data.get("email")
+            password = data.get("password")
+            
+            if not email or not password:
+                return JsonResponse({"error": "Email et mot de passe requis"}, status=400)
+            
+            if UserAuth.objects.filter(email=email).exists():
+                return JsonResponse({"error": "Email déjà utilisé"}, status=409)
+            
+            code = str(random.randint(100000, 999999))
+            user = UserAuth.objects.create(
+                email=email,
+                password=make_password(password),
+                is_verified=False,
+                verification_code=code
+            )
+            
+            html_content = f"""
+            <html>
+              <body style="background:#f7f9fc;padding:40px;">
+                <div style="max-width:400px;margin:auto;background:white;border-radius:12px;box-shadow:0 2px 8px #e3e8ee;padding:32px;">
+                  <h2 style="color:#2563eb;font-family:sans-serif;">Bienvenue sur <span style="color:#0ea5e9;">SportMap</span> !</h2>
+                  <p style="font-size:16px;color:#334155;font-family:sans-serif;">
+                    Voici votre code de validation :
+                  </p>
+                  <div style="font-size:32px;font-weight:bold;color:#2563eb;background:#e0f2fe;padding:16px;border-radius:8px;text-align:center;letter-spacing:4px;">
+                    {code}
+                  </div>
+                  <p style="margin-top:24px;font-size:14px;color:#64748b;font-family:sans-serif;">
+                    <br>
+                    Merci de votre inscription !
+                  </p>
+                </div>
+              </body>
+            </html>
+            """
+            
+            # ✅ UTILISER L'API BREVO AU LIEU DE SMTP
+            success, message = send_email_via_brevo_api(
+                to_email=email,
+                subject="Votre code de validation SportMap",
+                html_content=html_content,
+                text_content=f"Votre code de validation : {code}"
+            )
+            
+            if success:
+                return JsonResponse({"message": "Code envoyé par email"})
+            else:
+                # En cas d'échec, retourner le code pour debug
+                return JsonResponse({
+                    "message": "Email temporairement indisponible",
+                    "debug_code": code,  # ← Pour les tests
+                    "error_detail": message
+                })
+                
+        except Exception as e:
+            return JsonResponse({"error": f"Erreur serveur: {str(e)}"}, status=500)
+            
     return JsonResponse({"error": "Méthode non autorisée"}, status=405)
 
 @csrf_exempt
@@ -166,23 +149,58 @@ def verify_code_view(request):
 @csrf_exempt
 def request_password_reset(request):
     if request.method == "POST":
-        data = json.loads(request.body)
-        email = data.get("email")
-        if not UserAuth.objects.filter(email=email).exists():
-            return JsonResponse({"error": "Email inconnu"}, status=404)
-        token = secrets.token_urlsafe(32)
-        user = UserAuth.objects.get(email=email)
-        user.reset_token = token
-        user.reset_token_created = timezone.now()
-        user.save()
-        reset_link = f"http://localhost:1335/auth/reset-password/?token={token}&email={email}"
-        send_mail(
-            "Réinitialisation de votre mot de passe",
-            f"Pour réinitialiser votre mot de passe, cliquez sur ce lien : {reset_link}",
-            "noreply@sportmap.me",
-            [email],
-        )
-        return JsonResponse({"message": "Lien de réinitialisation envoyé par email"})
+        try:
+            data = json.loads(request.body)
+            email = data.get("email")
+            
+            if not UserAuth.objects.filter(email=email).exists():
+                return JsonResponse({"error": "Email inconnu"}, status=404)
+            
+            token = secrets.token_urlsafe(32)
+            user = UserAuth.objects.get(email=email)
+            user.reset_token = token
+            user.reset_token_created = timezone.now()
+            user.save()
+            
+            reset_link = f"https://cdabackend-production-3c8a.up.railway.app/auth/reset-password/?token={token}&email={email}"
+            
+            html_content = f"""
+            <html>
+              <body style="background:#f7f9fc;padding:40px;">
+                <div style="max-width:400px;margin:auto;background:white;border-radius:12px;box-shadow:0 2px 8px #e3e8ee;padding:32px;">
+                  <h2 style="color:#2563eb;font-family:sans-serif;">Réinitialisation de mot de passe</h2>
+                  <p style="font-size:16px;color:#334155;font-family:sans-serif;">
+                    Cliquez sur le bouton ci-dessous pour réinitialiser votre mot de passe :
+                  </p>
+                  <div style="text-align:center;margin:24px 0;">
+                    <a href="{reset_link}" style="background:#2563eb;color:white;padding:12px 24px;text-decoration:none;border-radius:8px;font-weight:bold;">
+                      Réinitialiser mon mot de passe
+                    </a>
+                  </div>
+                  <p style="font-size:12px;color:#64748b;font-family:sans-serif;">
+                    Ce lien expire dans 1 heure.
+                  </p>
+                </div>
+              </body>
+            </html>
+            """
+            
+            # ✅ UTILISER L'API BREVO
+            success, message = send_email_via_brevo_api(
+                to_email=email,
+                subject="Réinitialisation de votre mot de passe SportMap",
+                html_content=html_content,
+                text_content=f"Lien de réinitialisation: {reset_link}"
+            )
+            
+            if success:
+                return JsonResponse({"message": "Lien de réinitialisation envoyé par email"})
+            else:
+                return JsonResponse({"error": f"Erreur envoi email: {message}"}, status=500)
+                
+        except Exception as e:
+            return JsonResponse({"error": f"Erreur serveur: {str(e)}"}, status=500)
+            
     return JsonResponse({"error": "Méthode non autorisée"}, status=405)
 
 @csrf_exempt
