@@ -12,4 +12,5 @@ urlpatterns = [
     path('verify/', verify_code_view, name='verify'),
     path('request-password-reset/', request_password_reset, name='request-password-reset'),
     path('reset-password/', reset_password, name='reset-password'),
+    path('health/', views.health_check, name='health_check'),
 ]

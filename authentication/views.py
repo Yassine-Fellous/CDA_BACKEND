@@ -16,6 +16,29 @@ import random
 from django.core.mail import send_mail, EmailMultiAlternatives
 from .models import UserAuth
 
+# views.py
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+@csrf_exempt
+def health_check(request):
+    """Vue de test pour vérifier que l'API fonctionne"""
+    return JsonResponse({
+        "status": "API is working",
+        "method": request.method,
+        "available_endpoints": [
+            "/auth/register/",
+            "/auth/login/", 
+            "/auth/verify-code/",
+            "/geojson/",
+            "/health/"
+        ]
+    })
+
+# Et ajoutez dans urls.py :
+path('health/', views.health_check, name='health_check'),
+
 @csrf_exempt
 def login_view(request):
     if request.method == "POST":
