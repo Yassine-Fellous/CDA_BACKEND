@@ -36,8 +36,6 @@ def health_check(request):
         ]
     })
 
-# Et ajoutez dans urls.py :
-path('health/', views.health_check, name='health_check'),
 
 @csrf_exempt
 def login_view(request):
