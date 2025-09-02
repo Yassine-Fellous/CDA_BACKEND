@@ -27,6 +27,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('installations.urls')),
     #path('', include('installations.urls')), # Test URL for installations
+    path('auth/', include('authentication.urls')),
     path('', home),  # Test URL for home
 ]
 #path('', include('api.urls', namespace='api'))

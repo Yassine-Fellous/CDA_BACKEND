@@ -1,5 +1,6 @@
 django==4.2.7 
-psycopg2-binary==2.9.7 # Pour PostgreSQL
+psycopg2-binary==2.9.7
+PyJWT==2.8.0 # Pour PostgreSQL
 # psycopg2-binary est utilisé pour se connecter à la base de données PostgreSQL
 #SQLAlchemy==2.0.21 
 django-cors-headers==4.3.1 
@@ -9,7 +10,8 @@ gunicorn==21.2.0 # Serveur WSGI pour production railway
 # Pour Railway, on utilise gunicorn pour servir l'application Django
 # et on expose le port défini par Railway.
 # Railway utilise la variable d'environnement PORT pour définir le port sur lequel l'application doit écouter.
-whitenoise==6.6.0 # Pour servir les fichiers statiques en production
+whitenoise==6.6.0
+ # Pour servir les fichiers statiques en production
 # whitenoise est utilisé pour servir les fichiers statiques en production
 # Il est recommandé de l'utiliser avec Django pour simplifier la gestion des fichiers statiques.
 # Il permet de servir les fichiers statiques directement depuis l'application Django sans avoir besoin d'un serveur web séparé comme Nginx ou Apache.
