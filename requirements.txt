@@ -11,6 +11,7 @@ gunicorn==21.2.0 # Serveur WSGI pour production railway
 # et on expose le port défini par Railway.
 # Railway utilise la variable d'environnement PORT pour définir le port sur lequel l'application doit écouter.
 whitenoise==6.6.0
+requests==2.31.0
  # Pour servir les fichiers statiques en production
 # whitenoise est utilisé pour servir les fichiers statiques en production
 # Il est recommandé de l'utiliser avec Django pour simplifier la gestion des fichiers statiques.
