@@ -37,6 +37,7 @@ def health_check(request):
     })
 
 
+
 @csrf_exempt
 def login_view(request):
     if request.method == "POST":
@@ -55,9 +56,6 @@ def login_view(request):
                     "exp": expire
                 }
                 token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
-                user.token = token
-                user.token_expire = expire
-                user.save()
                 return JsonResponse({
                     "token": token,
                     "token_expire": expire,
