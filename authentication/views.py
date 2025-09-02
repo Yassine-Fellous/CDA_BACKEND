@@ -67,16 +67,67 @@ def login_view(request):
             return JsonResponse({"error": "Utilisateur non trouvé"}, status=404)
     return JsonResponse({"error": "Méthode non autorisée"}, status=405)
 
+#@csrf_exempt
+#def register_view(request):
+#    if request.method == "POST":
+#        data = json.loads(request.body)
+#        email = data.get("email")
+#        password = data.get("password")
+#        if not email or not password:
+#            return JsonResponse({"error": "Email et mot de passe requis"}, status=400)
+#        if UserAuth.objects.filter(email=email).exists():
+#            return JsonResponse({"error": "Email déjà utilisé"}, status=409)
+#        code = str(random.randint(100000, 999999))
+#        user = UserAuth.objects.create(
+#            email=email,
+#            password=make_password(password),
+#            is_verified=False,
+#            verification_code=code
+#        )
+#        html_content = f"""
+#        <html>
+#          <body style="background:#f7f9fc;padding:40px;">
+#            <div style="max-width:400px;margin:auto;background:white;border-radius:12px;box-shadow:0 2px 8px #e3e8ee;padding:32px;">
+#              <h2 style="color:#2563eb;font-family:sans-serif;">Bienvenue sur <span style="color:#0ea5e9;">SportMap</span> !</h2>
+#              <p style="font-size:16px;color:#334155;font-family:sans-serif;">
+#                Voici votre code de validation :
+#              </p>
+#              <div style="font-size:32px;font-weight:bold;color:#2563eb;background:#e0f2fe;padding:16px;border-radius:8px;text-align:center;letter-spacing:4px;">
+#                {code}
+#              </div>
+#              <p style="margin-top:24px;font-size:14px;color:#64748b;font-family:sans-serif;">
+#                <br>
+#                Merci de votre inscription !
+#              </p>
+#            </div>
+#          </body>
+#        </html>
+#        """
+#        msg = EmailMultiAlternatives(
+#            'Votre code de validation SportMap',
+#            f'Votre code est : {code}',
+#            'noreply@sportmap.me',
+#            [email]
+#        )
+#        msg.attach_alternative(html_content, "text/html")
+#        msg.send()
+#        return JsonResponse({"message": "Code envoyé par email"})
+#    return JsonResponse({"error": "Méthode non autorisée"}, status=405)
+#
+
 @csrf_exempt
 def register_view(request):
     if request.method == "POST":
         data = json.loads(request.body)
         email = data.get("email")
         password = data.get("password")
+        
         if not email or not password:
             return JsonResponse({"error": "Email et mot de passe requis"}, status=400)
+        
         if UserAuth.objects.filter(email=email).exists():
             return JsonResponse({"error": "Email déjà utilisé"}, status=409)
+        
         code = str(random.randint(100000, 999999))
         user = UserAuth.objects.create(
             email=email,
@@ -84,34 +135,13 @@ def register_view(request):
             is_verified=False,
             verification_code=code
         )
-        html_content = f"""
-        <html>
-          <body style="background:#f7f9fc;padding:40px;">
-            <div style="max-width:400px;margin:auto;background:white;border-radius:12px;box-shadow:0 2px 8px #e3e8ee;padding:32px;">
-              <h2 style="color:#2563eb;font-family:sans-serif;">Bienvenue sur <span style="color:#0ea5e9;">SportMap</span> !</h2>
-              <p style="font-size:16px;color:#334155;font-family:sans-serif;">
-                Voici votre code de validation :
-              </p>
-              <div style="font-size:32px;font-weight:bold;color:#2563eb;background:#e0f2fe;padding:16px;border-radius:8px;text-align:center;letter-spacing:4px;">
-                {code}
-              </div>
-              <p style="margin-top:24px;font-size:14px;color:#64748b;font-family:sans-serif;">
-                <br>
-                Merci de votre inscription !
-              </p>
-            </div>
-          </body>
-        </html>
-        """
-        msg = EmailMultiAlternatives(
-            'Votre code de validation SportMap',
-            f'Votre code est : {code}',
-            'noreply@sportmap.me',
-            [email]
-        )
-        msg.attach_alternative(html_content, "text/html")
-        msg.send()
-        return JsonResponse({"message": "Code envoyé par email"})
+        
+        # VERSION TEST - SANS EMAIL
+        return JsonResponse({
+            "message": "Compte créé - email désactivé pour tests",
+            "code": code  # Retourne le code directement
+        })
+    
     return JsonResponse({"error": "Méthode non autorisée"}, status=405)
 
 @csrf_exempt
