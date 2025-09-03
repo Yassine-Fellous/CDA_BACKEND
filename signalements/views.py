@@ -37,7 +37,7 @@ def create_signalement(request):
 
     try:
         data = json.loads(request.body)
-        installation_id = data.get("installation_id")
+        installation_id = data.get("installation_id")  # Peut être ID ou inst_numero
         message = data.get("message")
         images_url = data.get("images_url")
         type_ = data.get("type", "Autre")
@@ -45,7 +45,17 @@ def create_signalement(request):
         if not installation_id or not message:
             return JsonResponse({"error": "installation_id et message requis"}, status=400)
 
-        installation = Installation.objects.get(id=installation_id)
+        # ✨ LOGIQUE DE CORRESPONDANCE INTELLIGENTE
+        try:
+            # Si c'est un nombre, chercher par ID auto-incrémenté
+            if str(installation_id).isdigit():
+                installation = Installation.objects.get(id=int(installation_id))
+            else:
+                # Sinon, chercher par inst_numero (ex: "I130010048")
+                installation = Installation.objects.get(inst_numero=installation_id)
+                
+        except Installation.DoesNotExist:
+            return JsonResponse({"error": "Installation introuvable"}, status=404)
 
         signalement = Signalement.objects.create(
             message=message,
@@ -55,8 +65,16 @@ def create_signalement(request):
             installation=installation,
             date=timezone.now()
         )
-        return JsonResponse({"message": "Signalement créé", "id": signalement.id})
-    except Installation.DoesNotExist:
-        return JsonResponse({"error": "Installation introuvable"}, status=404)
+        
+        return JsonResponse({
+            "message": "Signalement créé", 
+            "id": signalement.id,
+            "installation": {
+                "id": installation.id,
+                "inst_numero": installation.inst_numero,
+                "nom": installation.inst_nom
+            }
+        })
+        
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
