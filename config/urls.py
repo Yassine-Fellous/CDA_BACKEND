@@ -6,10 +6,6 @@ from django.contrib import admin
 from django.urls import path, include
 from django.http import HttpResponse
 
-#lien vers les vues de l'application installations
-#qui affichent les données des installations sportives
-#pour les tests de l'API
-from installations import views
 def home(request):
     html = """
     <h1>Bienvenue sur l'API CDA Backend !</h1>
@@ -18,6 +14,8 @@ def home(request):
         <li><a href="equipments/">equipments/</a></li>
         <li><a href="geojson/">geojson/</a></li>
         <li><a href="installations/">installations/</a></li>
+        <li><a href="auth/">auth/</a></li>
+        <li><a href="signalements/">signalements/</a></li>
     </ul>
     <p>URL de base : <b>https://cdabackend-production.up.railway.app</b></p>
     """
@@ -26,8 +24,7 @@ def home(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('installations.urls')),
-    #path('', include('installations.urls')), # Test URL for installations
     path('auth/', include('authentication.urls')),
-    path('', home),  # Test URL for home
+    path('signalements/', include('signalements.urls')),  # ← AJOUTER CETTE LIGNE
+    path('', home),
 ]
-#path('', include('api.urls', namespace='api'))
