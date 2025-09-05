@@ -163,7 +163,7 @@ def get_geojson(request):
                         ]
                     },
                     "properties": {
-                        "id": installation.inst_numero,
+                        "id": installation.id,
                         "name": installation.inst_nom,
                         "type": installation.equip_type_name,
                         "family": installation.equip_type_famille,
