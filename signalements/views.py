@@ -39,22 +39,25 @@ def create_signalement(request):
 
     try:
         data = json.loads(request.body)
-        installation_id = data.get("installation_id")  # Reçoit "I130010048"
+        installation_id = data.get("installation_id")  # Reçoit ID auto-incrémenté (ex: 47)
         message = data.get("message")
         images_url = data.get("images_url")
         type_ = data.get("type", "Autre")
 
-        print(f"🔍 DEBUG - installation_id reçu: {installation_id}")
+        print(f"🔍 DEBUG - installation_id reçu: {installation_id} (type: {type(installation_id)})")
 
-        if not installation_id or not message:
+        if not installation_id and installation_id != 0:
+            return JsonResponse({"error": "installation_id et message requis"}, status=400)
+        
+        if not message:
             return JsonResponse({"error": "installation_id et message requis"}, status=400)
 
-        # ✅ TOUJOURS CHERCHER PAR inst_numero (jamais par ID Django)
+        # ✅ CHERCHER DIRECTEMENT PAR ID DJANGO AUTO-INCRÉMENTÉ
         try:
-            print(f"🔍 DEBUG - Recherche par inst_numero: {installation_id}")
+            print(f"🔍 DEBUG - Recherche par ID Django: {installation_id}")
             
-            # Ton frontend envoie toujours des inst_numero comme "I130010048"
-            installation = Installation.objects.get(inst_numero=installation_id)
+            # Ton frontend envoie maintenant l'ID Django (ex: 47)
+            installation = Installation.objects.get(id=installation_id)
             
             print(f"✅ DEBUG - Installation trouvée:")
             print(f"    - ID Django: {installation.id}")
@@ -62,8 +65,11 @@ def create_signalement(request):
             print(f"    - Nom: {installation.inst_nom}")
                 
         except Installation.DoesNotExist:
-            print(f"❌ DEBUG - Installation non trouvée avec inst_numero: {installation_id}")
+            print(f"❌ DEBUG - Installation non trouvée avec ID: {installation_id}")
             return JsonResponse({"error": "Installation introuvable"}, status=404)
+        except ValueError:
+            print(f"❌ DEBUG - ID invalide: {installation_id}")
+            return JsonResponse({"error": "ID d'installation invalide"}, status=400)
 
         # Créer le signalement avec l'ID Django (foreign key)
         signalement = Signalement.objects.create(
