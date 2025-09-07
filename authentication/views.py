@@ -26,6 +26,9 @@ def health_check(request):
             "/auth/register/",
             "/auth/login/", 
             "/auth/verify-code/",
+            "/auth/request-password-reset/",
+            "/auth/reset-password/",
+            "/auth/validate-reset-token/",  # ← NOUVEAU
             "/geojson/",
             "/health/"
         ]
@@ -222,4 +225,45 @@ def reset_password(request):
             return JsonResponse({"message": "Mot de passe réinitialisé"})
         except UserAuth.DoesNotExist:
             return JsonResponse({"error": "Lien invalide"}, status=400)
+    return JsonResponse({"error": "Méthode non autorisée"}, status=405)
+
+@csrf_exempt
+def validate_reset_token(request):
+    """Valider l'existence et la validité d'un token de réinitialisation"""
+    if request.method == "GET":
+        token = request.GET.get("token")
+        email = request.GET.get("email")  # Optionnel pour plus de sécurité
+        
+        if not token:
+            return JsonResponse({"valid": False, "error": "Token manquant"}, status=400)
+        
+        try:
+            # Chercher par token (et email si fourni)
+            if email:
+                user = UserAuth.objects.get(reset_token=token, email=email)
+            else:
+                user = UserAuth.objects.get(reset_token=token)
+            
+            # Vérifier l'expiration (1h comme dans reset_password)
+            if not user.reset_token_created or (timezone.now() - user.reset_token_created).total_seconds() > 3600:
+                return JsonResponse({
+                    "valid": False, 
+                    "error": "Token expiré",
+                    "expired": True
+                }, status=400)
+            
+            # Token valide
+            return JsonResponse({
+                "valid": True,
+                "email": user.email,  # Pour pré-remplir le formulaire
+                "expires_in": int(3600 - (timezone.now() - user.reset_token_created).total_seconds())
+            })
+            
+        except UserAuth.DoesNotExist:
+            return JsonResponse({
+                "valid": False, 
+                "error": "Token invalide",
+                "not_found": True
+            }, status=404)
+    
     return JsonResponse({"error": "Méthode non autorisée"}, status=405)
