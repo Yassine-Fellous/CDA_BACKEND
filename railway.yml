@@ -7,9 +7,33 @@ deploy:
     sh -c "
       echo '🔄 Starting deployment...' &&
       python manage.py collectstatic --noinput || true &&
-      python manage.py makemigrations --noinput || true &&
-      python manage.py migrate --noinput || true &&
-      python manage.py migrate --run-syncdb || true &&
+      echo '🔧 Handling existing tables...' &&
+      python -c \"
+import os, django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+django.setup()
+from django.core.management import execute_from_command_line
+from django.db import connection
+
+# Vérifier si les tables existent
+with connection.cursor() as cursor:
+    cursor.execute(\\\"SELECT table_name FROM information_schema.tables WHERE table_schema='public';\\\")
+    existing_tables = [row[0] for row in cursor.fetchall()]
+    
+    # Si les tables existent, fake les migrations
+    if 'authentication_userauth' in existing_tables:
+        print('📋 Tables exist, marking migrations as applied...')
+        try:
+            execute_from_command_line(['manage.py', 'migrate', 'authentication', '--fake'])
+            execute_from_command_line(['manage.py', 'migrate', 'installations', '--fake'])
+            execute_from_command_line(['manage.py', 'migrate', 'signalements', '--fake'])
+        except:
+            pass
+    else:
+        # Appliquer normalement si tables n'existent pas
+        execute_from_command_line(['manage.py', 'migrate'])
+      \" &&
+      echo '👤 Setting up admin...' &&
       python -c \"
 import os, django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
