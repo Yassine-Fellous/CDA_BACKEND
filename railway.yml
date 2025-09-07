@@ -5,11 +5,15 @@ build:
 deploy:
   startCommand: >
     sh -c "
+      echo '🔄 Creating migrations...' &&
       python manage.py makemigrations &&
-      ython manage.py makemigrations authentication --name add_admin_fields &&
-      python manage.py makemigrations signalements --name add_admin_management &&
+      python manage.py makemigrations authentication &&
+      python manage.py makemigrations signalements &&
+      echo '🔄 Applying migrations...' &&
       python manage.py migrate &&
-      python manage.py load_csv data/filtered-data-es.csv || true &&
+      echo '📊 Loading data...' &&
+      python manage.py load_csv data/filtered-data-es.csv --force || true &&
+      echo '🚀 Starting server...' &&
       gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
     "
   healthcheckPath: /api/v1/installations/sports/
