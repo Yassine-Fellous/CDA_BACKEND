@@ -5,16 +5,40 @@ build:
 deploy:
   startCommand: >
     sh -c "
-      echo '🔄 Creating migrations...' &&
-      python manage.py makemigrations &&
-      python manage.py makemigrations authentication &&
-      python manage.py makemigrations signalements &&
-      echo '🔄 Applying migrations...' &&
-      python manage.py migrate &&
+      echo '🔄 Creating migrations with specific names...' &&
+      python manage.py makemigrations authentication --name add_admin_fields --noinput &&
+      python manage.py makemigrations signalements --name add_admin_management --noinput &&
+      echo '🔄 Applying all migrations...' &&
+      python manage.py migrate --noinput &&
+      echo '👤 Setting up admin user...' &&
+      python -c \"
+import os, django, sys
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+django.setup()
+try:
+    from authentication.models import UserAuth
+    from django.contrib.auth.hashers import make_password
+    admin_email = 'admin@sportmap.com'
+    if UserAuth.objects.filter(email=admin_email).exists():
+        admin = UserAuth.objects.get(email=admin_email)
+        admin.is_admin = True
+        admin.save()
+        print(f'✅ Admin updated: {admin_email}')
+    else:
+        UserAuth.objects.create(
+            email=admin_email,
+            password=make_password('AdminSportMap2025!'),
+            is_verified=True,
+            is_admin=True
+        )
+        print(f'✅ Admin created: {admin_email}')
+except Exception as e:
+    print(f'❌ Admin setup error: {e}')
+      \" &&
       echo '📊 Loading data...' &&
       python manage.py load_csv data/filtered-data-es.csv --force || true &&
       echo '🚀 Starting server...' &&
-      gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
+      gunicorn config.wsgi:application --bind 0.0.0.0:\$PORT --workers 2 --timeout 120
     "
   healthcheckPath: /api/v1/installations/sports/
   healthcheckTimeout: 30
