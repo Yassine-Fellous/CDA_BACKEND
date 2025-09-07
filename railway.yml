@@ -5,10 +5,14 @@ build:
 deploy:
   startCommand: >
     sh -c "
-      python manage.py makemigrations &&
+      echo '🔄 Démarrage des migrations...' &&
+      python manage.py makemigrations authentication --name add_admin_fields &&
+      python manage.py makemigrations signalements --name add_admin_management &&
       python manage.py migrate &&
-      python manage.py load_csv data/filtered-data-es.csv || true &&
-      gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
+      echo '📊 Import des données...' &&
+      python manage.py load_csv data/filtered-data-es.csv --force || true &&
+      echo '🚀 Démarrage du serveur...' &&
+      gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     "
   healthcheckPath: /api/v1/installations/sports/
   healthcheckTimeout: 30

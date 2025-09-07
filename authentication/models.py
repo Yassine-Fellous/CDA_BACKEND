@@ -18,6 +18,7 @@ class UserAuth(models.Model):
     # Nouveau champ pour l'administration
     is_admin = models.BooleanField(default=False)  # ← NOUVEAU
 
+
     class Meta:
         db_table = 'user_auth'
         verbose_name = 'Utilisateur'
