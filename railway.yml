@@ -5,64 +5,11 @@ build:
 deploy:
   startCommand: >
     sh -c "
-      echo '🔄 Starting deployment...' &&
-      python manage.py collectstatic --noinput || true &&
-      echo '🔧 Handling existing tables...' &&
-      python -c \"
-import os, django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
-django.setup()
-from django.core.management import execute_from_command_line
-from django.db import connection
-
-# Vérifier si les tables existent
-with connection.cursor() as cursor:
-    cursor.execute(\\\"SELECT table_name FROM information_schema.tables WHERE table_schema='public';\\\")
-    existing_tables = [row[0] for row in cursor.fetchall()]
-    
-    # Si les tables existent, fake les migrations
-    if 'authentication_userauth' in existing_tables:
-        print('📋 Tables exist, marking migrations as applied...')
-        try:
-            execute_from_command_line(['manage.py', 'migrate', 'authentication', '--fake'])
-            execute_from_command_line(['manage.py', 'migrate', 'installations', '--fake'])
-            execute_from_command_line(['manage.py', 'migrate', 'signalements', '--fake'])
-        except:
-            pass
-    else:
-        # Appliquer normalement si tables n'existent pas
-        execute_from_command_line(['manage.py', 'migrate'])
-      \" &&
-      echo '👤 Setting up admin...' &&
-      python -c \"
-import os, django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
-django.setup()
-from authentication.models import UserAuth
-from django.contrib.auth.hashers import make_password
-admin_email = 'admin@sportmap.com'
-try:
-    if not UserAuth.objects.filter(email=admin_email).exists():
-        UserAuth.objects.create(
-            email=admin_email,
-            password=make_password('AdminSportMap2025!'),
-            is_verified=True,
-            is_admin=True
-        )
-        print(f'✅ Admin created: {admin_email}')
-    else:
-        admin = UserAuth.objects.get(email=admin_email)
-        admin.is_admin = True
-        admin.save()
-        print(f'✅ Admin updated: {admin_email}')
-except Exception as e:
-    print(f'❌ Admin setup error: {e}')
-      \" &&
-      python manage.py load_csv data/filtered-data-es.csv --force || echo 'Data load skipped' &&
-      echo '🚀 Starting server...' &&
-      gunicorn config.wsgi:application --bind 0.0.0.0:\$PORT --workers 2 --timeout 120
+      python manage.py makemigrations &&
+      python manage.py migrate &&
+      python manage.py load_csv data/filtered-data-es.csv || true &&
+      gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
     "
-  healthcheckPath: /health/
-  healthcheckTimeout: 60
+  healthcheckPath: /api/v1/installations/sports/
+  healthcheckTimeout: 30
   restartPolicyType: always
-
