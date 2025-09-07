@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('authentication', '0001_initial'),
-        ('installations', '__first__'),
+        ('installations', '0001_initial'),
     ]
 
     operations = [
@@ -23,19 +23,28 @@ class Migration(migrations.Migration):
                 ('images_urls', models.JSONField(blank=True, default=list)),
                 ('images_url', models.CharField(blank=True, max_length=255, null=True)),
                 ('date', models.DateTimeField(default=django.utils.timezone.now)),
-                ('type', models.CharField(choices=[('Dégradation', 'Dégradation'), ('Équipement cassé', 'Équipement cassé'), ("Problème d'accès", "Problème d'accès"), ('Sécurité', 'Problème de sécurité'), ('Propreté', 'Problème de propreté'), ('Autre', 'Autre')], default='Autre', max_length=100)),
-                ('etat', models.CharField(choices=[('Nouveau', 'Nouveau'), ('Vérification', 'En vérification'), ('En maintenance', 'En maintenance'), ('Maintenance effectuée', 'Maintenance effectuée'), ('Rejeté', 'Rejeté'), ('Fermé', 'Fermé')], default='Nouveau', max_length=100)),
+                ('type', models.CharField(max_length=100, choices=[
+                    ('Dégradation', 'Dégradation'),
+                    ('Équipement cassé', 'Équipement cassé'),
+                    ("Problème d'accès", "Problème d'accès"),
+                    ('Sécurité', 'Problème de sécurité'),
+                    ('Propreté', 'Problème de propreté'),
+                    ('Autre', 'Autre'),
+                ], default='Autre')),
+                ('etat', models.CharField(max_length=100, choices=[
+                    ('Nouveau', 'Nouveau'),
+                    ('Vérification', 'En vérification'),
+                    ('En maintenance', 'En maintenance'),
+                    ('Maintenance effectuée', 'Maintenance effectuée'),
+                    ('Rejeté', 'Rejeté'),
+                    ('Fermé', 'Fermé'),
+                ], default='Nouveau')),
                 ('date_modification', models.DateTimeField(auto_now=True)),
-                ('admin_notes', models.TextField(blank=True, help_text="Notes internes pour l'administration", null=True)),
+                ('admin_notes', models.TextField(blank=True, null=True, help_text="Notes internes pour l'administration")),
                 ('installation', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='signalements', to='installations.installation')),
-                ('traite_par', models.ForeignKey(blank=True, help_text='Admin qui a traité le signalement', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='signalements_traites', to='authentication.userauth')),
                 ('utilisateur', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='signalements', to='authentication.userauth')),
+                ('traite_par', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='signalements_traites', to='authentication.userauth', help_text='Admin qui a traité le signalement')),
             ],
-            options={
-                'verbose_name': 'Signalement',
-                'verbose_name_plural': 'Signalements',
-                'db_table': 'signalements',
-                'ordering': ['-date'],
-            },
+            options={'ordering': ['-date']},
         ),
     ]
