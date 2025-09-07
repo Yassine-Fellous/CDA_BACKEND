@@ -162,7 +162,7 @@ def request_password_reset(request):
             user.reset_token_created = timezone.now()
             user.save()
             
-            reset_link = f"https://cdabackend-production-3c8a.up.railway.app/auth/reset-password/?token={token}&email={email}"
+            reset_link = f"https://cdafrontend-production.up.railway.app/reset-password/?token={token}&email={email}"
             
             html_content = f"""
             <html>
