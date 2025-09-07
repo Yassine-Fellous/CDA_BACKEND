@@ -26,9 +26,10 @@ def health_check(request):
             "/auth/register/",
             "/auth/login/", 
             "/auth/verify-code/",
+            "/auth/resend-verification-code/",  # ← NOUVEAU
             "/auth/request-password-reset/",
             "/auth/reset-password/",
-            "/auth/validate-reset-token/",  # ← NOUVEAU
+            "/auth/validate-reset-token/",
             "/geojson/",
             "/health/"
         ]
@@ -266,4 +267,77 @@ def validate_reset_token(request):
                 "not_found": True
             }, status=404)
     
+    return JsonResponse({"error": "Méthode non autorisée"}, status=405)
+
+@csrf_exempt
+def resend_verification_code(request):
+    """Renvoyer un nouveau code de validation à un utilisateur non vérifié"""
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            email = data.get("email")
+            
+            if not email:
+                return JsonResponse({"error": "Email requis"}, status=400)
+            
+            # Vérifier que l'utilisateur existe et n'est pas encore vérifié
+            try:
+                user = UserAuth.objects.get(email=email, is_verified=False)
+            except UserAuth.DoesNotExist:
+                # Sécurité : ne pas révéler si l'utilisateur existe ou est déjà vérifié
+                return JsonResponse({
+                    "message": "Si ce compte existe et n'est pas vérifié, un nouveau code a été envoyé"
+                })
+            
+            # Générer un nouveau code de vérification (même format que register_view)
+            new_code = str(random.randint(100000, 999999))
+            user.verification_code = new_code
+            user.save()
+            
+            print(f"🔄 DEBUG - Nouveau code généré pour {email}: {new_code}")
+            
+            # HTML email cohérent avec le style existant
+            html_content = f"""
+            <html>
+              <body style="background:#f7f9fc;padding:40px;">
+                <div style="max-width:400px;margin:auto;background:white;border-radius:12px;box-shadow:0 2px 8px #e3e8ee;padding:32px;">
+                  <h2 style="color:#2563eb;font-family:sans-serif;">Code de vérification <span style="color:#0ea5e9;">SportMap</span></h2>
+                  <p style="font-size:16px;color:#334155;font-family:sans-serif;">
+                    Voici votre nouveau code de vérification :
+                  </p>
+                  <div style="font-size:32px;font-weight:bold;color:#2563eb;background:#e0f2fe;padding:16px;border-radius:8px;text-align:center;letter-spacing:4px;">
+                    {new_code}
+                  </div>
+                  <p style="margin-top:24px;font-size:14px;color:#64748b;font-family:sans-serif;">
+                    Si vous n'avez pas demandé ce code, ignorez cet email.
+                    <br>
+                    L'équipe SportMap
+                  </p>
+                </div>
+              </body>
+            </html>
+            """
+            
+            # Utiliser l'API Brevo (cohérent avec tes autres envois)
+            success, message = send_email_via_brevo_api(
+                to_email=email,
+                subject="Nouveau code de vérification SportMap",
+                html_content=html_content,
+                text_content=f"Votre nouveau code de vérification SportMap : {new_code}"
+            )
+            
+            if success:
+                return JsonResponse({"message": "Nouveau code envoyé avec succès"})
+            else:
+                # En cas d'échec email, retourner le code pour debug (comme dans register_view)
+                return JsonResponse({
+                    "message": "Email temporairement indisponible",
+                    "debug_code": new_code,  # ← Pour les tests
+                    "error_detail": message
+                })
+                
+        except Exception as e:
+            print(f"❌ DEBUG - Erreur resend_verification_code: {str(e)}")
+            return JsonResponse({"error": f"Erreur serveur: {str(e)}"}, status=500)
+            
     return JsonResponse({"error": "Méthode non autorisée"}, status=405)
