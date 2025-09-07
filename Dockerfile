@@ -18,5 +18,5 @@ COPY . .
 
 EXPOSE $PORT
 
-# ✅ CMD SIMPLIFIÉ - Railway va utiliser railway.yml pour le startCommand
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:$PORT"]
+# Run migration and start the Django server
+CMD ["sh", "-c", "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"]
