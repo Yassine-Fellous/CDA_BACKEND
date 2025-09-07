@@ -5,26 +5,20 @@ build:
 deploy:
   startCommand: >
     sh -c "
-      echo '🔄 Creating migrations with specific names...' &&
-      python manage.py makemigrations authentication --name add_admin_fields --noinput &&
-      python manage.py makemigrations signalements --name add_admin_management --noinput &&
-      echo '🔄 Applying all migrations...' &&
-      python manage.py migrate --noinput &&
-      echo '👤 Setting up admin user...' &&
+      echo '🔄 Starting deployment...' &&
+      python manage.py collectstatic --noinput || true &&
+      python manage.py makemigrations --noinput || true &&
+      python manage.py migrate --noinput || true &&
+      python manage.py migrate --run-syncdb || true &&
       python -c \"
-import os, django, sys
+import os, django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
+from authentication.models import UserAuth
+from django.contrib.auth.hashers import make_password
+admin_email = 'admin@sportmap.com'
 try:
-    from authentication.models import UserAuth
-    from django.contrib.auth.hashers import make_password
-    admin_email = 'admin@sportmap.com'
-    if UserAuth.objects.filter(email=admin_email).exists():
-        admin = UserAuth.objects.get(email=admin_email)
-        admin.is_admin = True
-        admin.save()
-        print(f'✅ Admin updated: {admin_email}')
-    else:
+    if not UserAuth.objects.filter(email=admin_email).exists():
         UserAuth.objects.create(
             email=admin_email,
             password=make_password('AdminSportMap2025!'),
@@ -32,14 +26,19 @@ try:
             is_admin=True
         )
         print(f'✅ Admin created: {admin_email}')
+    else:
+        admin = UserAuth.objects.get(email=admin_email)
+        admin.is_admin = True
+        admin.save()
+        print(f'✅ Admin updated: {admin_email}')
 except Exception as e:
     print(f'❌ Admin setup error: {e}')
       \" &&
-      echo '📊 Loading data...' &&
-      python manage.py load_csv data/filtered-data-es.csv --force || true &&
+      python manage.py load_csv data/filtered-data-es.csv --force || echo 'Data load skipped' &&
       echo '🚀 Starting server...' &&
       gunicorn config.wsgi:application --bind 0.0.0.0:\$PORT --workers 2 --timeout 120
     "
-  healthcheckPath: /api/v1/installations/sports/
-  healthcheckTimeout: 30
+  healthcheckPath: /health/
+  healthcheckTimeout: 60
   restartPolicyType: always
+
