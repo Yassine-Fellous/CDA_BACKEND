@@ -26,8 +26,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'installations',
     'authentication',
-    'signalements',
-    'drf_spectacular',
+    'signalements'
 ]
 
 MIDDLEWARE = [
@@ -113,7 +112,6 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 100,
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -121,12 +119,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 BREVO_API_KEY = os.getenv('BREVO_API_KEY')
 DEFAULT_FROM_EMAIL = 'noreply@sportmap.me'
-
-SPECTACULAR_SETTINGS = {
-    'TITLE': 'CDA Backend API',
-    'DESCRIPTION': 'API pour signalement d\'équipements sportifs',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
-    'COMPONENT_SPLIT_REQUEST': True,
-    'SCHEMA_PATH_PREFIX': '/api/',
-}

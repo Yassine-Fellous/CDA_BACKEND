@@ -82,33 +82,3 @@ class InstallationListSerializer(serializers.ModelSerializer):
                 data['coordonnees'] = None
         
         return data
-
-# installations/serializers.py - Ajouter des serializers pour Swagger
-
-class ErrorSerializer(serializers.Serializer):
-    error = serializers.CharField()
-
-class CoordinatesSerializer(serializers.Serializer):
-    lon = serializers.FloatField()
-    lat = serializers.FloatField()
-
-class InstallationResponseSerializer(serializers.ModelSerializer):
-    coordonnees = CoordinatesSerializer()
-    
-    class Meta:
-        model = Installation
-        fields = '__all__'
-
-class SignalementCreateSerializer(serializers.Serializer):
-    installation_id = serializers.IntegerField()
-    message = serializers.CharField()
-    images_url = serializers.URLField(required=False)
-    type = serializers.ChoiceField(
-        choices=['Dégradation', 'Équipement cassé', 'Problème d\'accès', 'Sécurité', 'Propreté', 'Autre'],
-        default='Autre'
-    )
-
-class SignalementResponseSerializer(serializers.Serializer):
-    message = serializers.CharField()
-    id = serializers.IntegerField()
-    installation = serializers.DictField()

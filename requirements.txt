@@ -18,5 +18,3 @@ requests==2.31.0
 # Il permet de servir les fichiers statiques directement depuis l'application Django sans avoir besoin d'un serveur web séparé comme Nginx ou Apache.
 # Cela simplifie le déploiement et la configuration de l'application.
 # whitenoise est particulièrement utile pour les applications déployées sur des
-drf-spectacular==0.27.0
-drf-spectacular[sidecar]==0.27.0
