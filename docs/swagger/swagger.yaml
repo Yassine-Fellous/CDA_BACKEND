@@ -1,0 +1,675 @@
+# Authentication - Base URL: /auth/
+/auth/register/:
+  post:
+    summary: "Créer un nouveau compte utilisateur"
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                format: email
+              password:
+                type: string
+                minLength: 8
+    responses:
+      201:
+        description: "Compte créé, code de validation envoyé"
+      400:
+        description: "Données invalides"
+      409:
+        description: "Email déjà utilisé"
+
+/auth/login/:
+  post:
+    summary: "Connexion utilisateur"
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                format: email
+              password:
+                type: string
+    responses:
+      200:
+        description: "Connexion réussie"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                token_expire:
+                  type: string
+                  format: date-time
+                message:
+                  type: string
+      401:
+        description: "Identifiants incorrects"
+      403:
+        description: "Compte non vérifié"
+
+/auth/verify-code/:
+  post:
+    summary: "Vérifier le code de validation"
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                format: email
+              code:
+                type: string
+                minLength: 6
+                maxLength: 6
+    responses:
+      200:
+        description: "Compte validé avec succès"
+      400:
+        description: "Code invalide ou expiré"
+
+/auth/resend-verification-code/:
+  post:
+    summary: "Renvoyer le code de validation"
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                format: email
+    responses:
+      200:
+        description: "Code renvoyé"
+      404:
+        description: "Utilisateur non trouvé"
+
+/auth/request-password-reset/:
+  post:
+    summary: "Demander une réinitialisation de mot de passe"
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                format: email
+    responses:
+      200:
+        description: "Email de réinitialisation envoyé"
+      404:
+        description: "Utilisateur non trouvé"
+
+/auth/reset-password/:
+  post:
+    summary: "Réinitialiser le mot de passe"
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+              email:
+                type: string
+                format: email
+              new_password:
+                type: string
+                minLength: 8
+    responses:
+      200:
+        description: "Mot de passe modifié"
+      400:
+        description: "Token invalide ou expiré"
+
+/auth/validate-reset-token/:
+  get:
+    summary: "Valider un token de réinitialisation"
+    parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: email
+        in: query
+        required: false
+        schema:
+          type: string
+          format: email
+    responses:
+      200:
+        description: "Token valide"
+      400:
+        description: "Token invalide ou expiré"
+
+/health/:
+  get:
+    summary: "Vérification de santé de l'API"
+    responses:
+      200:
+        description: "API fonctionnelle"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                available_endpoints:
+                  type: array
+                  items:
+                    type: string
+
+# Installations - Base URL: /api/v1/
+/api/v1/installations/equipments/:
+  get:
+    summary: "Liste des équipements sportifs"
+    tags: ["Installations"]
+    parameters:
+      - name: bounds
+        in: query
+        description: "Filtrage géographique (sw_lng,sw_lat,ne_lng,ne_lat)"
+        schema:
+          type: string
+          example: "5.1,43.1,5.7,43.4"
+      - name: types
+        in: query
+        description: "Types d'équipements (séparés par virgules)"
+        schema:
+          type: string
+          example: "Terrain de football,Terrain de tennis"
+    responses:
+      200:
+        description: "Liste des équipements"
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Installation'
+
+/api/v1/installations/geojson/:
+  get:
+    summary: "Données GeoJSON des installations"
+    tags: ["Installations"]
+    responses:
+      200:
+        description: "Collection GeoJSON"
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GeoJSONCollection'
+
+/api/v1/installations/sports/:
+  get:
+    summary: "Liste des sports disponibles"
+    tags: ["Installations"]
+    parameters:
+      - name: detailed
+        in: query
+        description: "Statistiques détaillées"
+        schema:
+          type: boolean
+          default: false
+    responses:
+      200:
+        description: "Liste des sports"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sports:
+                  type: array
+                  items:
+                    type: string
+                total_count:
+                  type: integer
+
+/api/v1/installations/installations/:
+  get:
+    summary: "Liste paginée des installations"
+    tags: ["Installations"]
+    parameters:
+      - name: limit
+        in: query
+        description: "Nombre maximum d'éléments"
+        schema:
+          type: integer
+          default: 10
+          maximum: 100
+    responses:
+      200:
+        description: "Installations paginées"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                installations:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Installation'
+                count:
+                  type: integer
+                limit:
+                  type: integer
+
+# Signalements - Base URL: /signalements/
+/signalements/create/:
+  post:
+    summary: "Créer un nouveau signalement"
+    tags: ["Signalements"]
+    security:
+      - BearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - installation_id
+              - message
+            properties:
+              installation_id:
+                type: integer
+                description: "ID Django de l'installation"
+                example: 47
+              message:
+                type: string
+                description: "Description du problème"
+                example: "Terrain de tennis abîmé"
+              images_url:
+                type: string
+                description: "URL de l'image (optionnel)"
+                example: "https://example.com/image.jpg"
+              type:
+                type: string
+                enum: ["Dégradation", "Équipement cassé", "Problème d'accès", "Sécurité", "Propreté", "Autre"]
+                default: "Autre"
+    responses:
+      201:
+        description: "Signalement créé avec succès"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: "Signalement créé"
+                id:
+                  type: integer
+                  example: 123
+                installation:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 47
+                    inst_numero:
+                      type: string
+                      example: "EQ001"
+                    nom:
+                      type: string
+                      example: "Terrain de tennis municipal"
+      400:
+        description: "Données manquantes ou invalides"
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+      401:
+        description: "Authentification requise"
+      404:
+        description: "Installation introuvable"
+
+# Administration - Base URL: /api/v1/signalements/admin/
+/api/v1/signalements/admin/list/:
+  get:
+    summary: "Liste tous les signalements (Admin seulement)"
+    tags: ["Admin - Signalements"]
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: etat
+        in: query
+        description: "Filtrer par état"
+        schema:
+          type: string
+          enum: ["Nouveau", "Vérification", "En maintenance", "Maintenance effectuée", "Rejeté", "Fermé"]
+      - name: type
+        in: query
+        description: "Filtrer par type"
+        schema:
+          type: string
+          enum: ["Dégradation", "Équipement cassé", "Problème d'accès", "Sécurité", "Propreté", "Autre"]
+      - name: utilisateur_id
+        in: query
+        description: "Filtrer par utilisateur"
+        schema:
+          type: integer
+      - name: installation_id
+        in: query
+        description: "Filtrer par installation"
+        schema:
+          type: integer
+      - name: limit
+        in: query
+        description: "Nombre maximum de résultats"
+        schema:
+          type: integer
+          default: 50
+          maximum: 200
+      - name: offset
+        in: query
+        description: "Décalage pour pagination"
+        schema:
+          type: integer
+          default: 0
+    responses:
+      200:
+        description: "Liste des signalements avec pagination"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                signalements:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SignalementAdmin'
+                pagination:
+                  $ref: '#/components/schemas/Pagination'
+                stats:
+                  $ref: '#/components/schemas/StatsRapides'
+      403:
+        description: "Accès admin requis"
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+# /api/v1/signalements/admin/{signalement_id}/update/:
+  put:
+    summary: "Mettre à jour un signalement (Admin)"
+    tags: ["Admin - Signalements"]
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: signalement_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        example: 123
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              etat:
+                type: string
+                enum: ["Nouveau", "Vérification", "En maintenance", "Maintenance effectuée", "Rejeté", "Fermé"]
+                example: "En maintenance"
+              admin_notes:
+                type: string
+                description: "Notes internes pour l'administration"
+                example: "Intervention programmée pour demain"
+    responses:
+      200:
+        description: "Signalement mis à jour"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: "Signalement mis à jour"
+                signalement:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 123
+                    ancien_etat:
+                      type: string
+                      example: "Nouveau"
+                    nouvel_etat:
+                      type: string
+                      example: "En maintenance"
+                    admin_notes:
+                      type: string
+                      example: "Intervention programmée pour demain"
+                    traite_par:
+                      type: string
+                      example: "admin@sportmap.com"
+                    date_modification:
+                      type: string
+                      format: date-time
+                      example: "2025-09-09T14:30:00Z"
+      400:
+        description: "État invalide"
+      403:
+        description: "Accès admin requis"
+      404:
+        description: "Signalement introuvable"
+
+/api/v1/signalements/admin/{signalement_id}/delete/:
+  delete:
+    summary: "Supprimer un signalement (Admin)"
+    tags: ["Admin - Signalements"]
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: signalement_id
+        in: path
+        required: true
+        schema:
+          type: integer
+        example: 123
+    responses:
+      200:
+        description: "Signalement supprimé"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: "Signalement supprimé"
+                signalement_supprime:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    message:
+                      type: string
+                    type:
+                      type: string
+                supprime_par:
+                  type: string
+                  example: "admin@sportmap.com"
+      403:
+        description: "Accès admin requis"
+      404:
+        description: "Signalement introuvable"
+
+/api/v1/signalements/admin/stats/:
+  get:
+    summary: "Statistiques détaillées des signalements (Admin)"
+    tags: ["Admin - Signalements"]
+    security:
+      - BearerAuth: []
+    responses:
+      200:
+        description: "Statistiques complètes"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                stats_par_etat:
+                  type: object
+                  additionalProperties:
+                    type: integer
+                  example:
+                    "Nouveau": 15
+                    "En maintenance": 8
+                    "Fermé": 25
+                stats_par_type:
+                  type: object
+                  additionalProperties:
+                    type: integer
+                  example:
+                    "Dégradation": 20
+                    "Équipement cassé": 12
+                    "Autre": 8
+                stats_temporelles:
+                  type: object
+                  properties:
+                    aujourd_hui:
+                      type: integer
+                      example: 3
+                    hier:
+                      type: integer
+                      example: 5
+                    cette_semaine:
+                      type: integer
+                      example: 18
+                    ce_mois:
+                      type: integer
+                      example: 42
+                    total:
+                      type: integer
+                      example: 156
+                top_utilisateurs:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      utilisateur__email:
+                        type: string
+                        example: "user@example.com"
+                      utilisateur__id:
+                        type: integer
+                        example: 45
+                      nb_signalements:
+                        type: integer
+                        example: 7
+                top_installations:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      installation__inst_nom:
+                        type: string
+                        example: "Complexe sportif municipal"
+                      installation__id:
+                        type: integer
+                        example: 47
+                      installation__inst_numero:
+                        type: string
+                        example: "EQ001"
+                      nb_signalements:
+                        type: integer
+                        example: 12
+      403:
+        description: "Accès admin requis"
+
+/api/v1/signalements/admin/utilisateurs/:
+  get:
+    summary: "Liste des utilisateurs avec leurs signalements (Admin)"
+    tags: ["Admin - Signalements"]
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: limit
+        in: query
+        description: "Nombre maximum d'utilisateurs"
+        schema:
+          type: integer
+          default: 50
+          maximum: 200
+      - name: offset
+        in: query
+        description: "Décalage pour pagination"
+        schema:
+          type: integer
+          default: 0
+    responses:
+      200:
+        description: "Liste des utilisateurs"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                utilisateurs:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 45
+                      email:
+                        type: string
+                        example: "user@example.com"
+                      nom:
+                        type: string
+                        example: "Dupont"
+                      prenom:
+                        type: string
+                        example: "Jean"
+                      is_verified:
+                        type: boolean
+                        example: true
+                      date_inscription:
+                        type: string
+                        format: date-time
+                        example: "2025-08-15T10:30:00Z"
+                      nb_signalements:
+                        type: integer
+                        example: 7
+                      derniers_signalements:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            type:
+                              type: string
+                            etat:
+                              type: string
+                            date:
+                              type: string
+                              format: date-time
+                            installation__inst_nom:
+                              type: string
+                pagination:
+                  $ref: '#/components/schemas/Pagination'
+      403:
+        description: "Accès admin requis"

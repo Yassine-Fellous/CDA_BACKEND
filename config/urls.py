@@ -5,26 +5,38 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.http import HttpResponse
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView, 
+    SpectacularRedocView
+)
 
 def home(request):
     html = """
-    <h1>Bienvenue sur l'API CDA Backend !</h1>
+    <h1>🚀 CDA Backend API</h1>
     <ul>
-        <li><a href="sports/">sports/</a></li>
-        <li><a href="equipments/">equipments/</a></li>
-        <li><a href="geojson/">geojson/</a></li>
-        <li><a href="installations/">installations/</a></li>
-        <li><a href="auth/">auth/</a></li>
-        <li><a href="signalements/">signalements/</a></li>
+        <li><a href="/api/docs/">📖 Swagger UI Documentation</a></li>
+        <li><a href="/api/redoc/">📚 ReDoc Documentation</a></li>
+        <li><a href="/api/schema/">🔗 OpenAPI Schema</a></li>
+        <li><a href="/installations/">🏟️ Installations</a></li>
+        <li><a href="/auth/">🔐 Authentication</a></li>
+        <li><a href="/signalements/">🚨 Signalements</a></li>
     </ul>
-    <p>URL de base : <b>https://cdabackend-production.up.railway.app</b></p>
     """
     return HttpResponse(html)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('installations.urls')),
+    path('', home, name='home'),
+    
+    # API Documentation
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    
+    # Apps
+    path('installations/', include('installations.urls')),
     path('auth/', include('authentication.urls')),
-    path('signalements/', include('signalements.urls')),  # ← AJOUTER CETTE LIGNE
-    path('', home),
+    path('signalements/', include('signalements.urls')),
+    path('health/', include('authentication.urls')),
 ]
