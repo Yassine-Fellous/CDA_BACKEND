@@ -28,7 +28,6 @@ class Signalement(models.Model):
     ]
 
     message = models.TextField()
-    images_urls = models.JSONField(default=list, blank=True)  # Nouvelle liste d'URLs
     images_url = models.CharField(max_length=255, blank=True, null=True)  # Legacy
     date = models.DateTimeField(default=timezone.now)
     type = models.CharField(max_length=100, choices=TYPE_CHOICES, default='Autre')
